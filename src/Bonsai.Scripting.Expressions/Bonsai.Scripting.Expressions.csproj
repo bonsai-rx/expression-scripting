@@ -5,6 +5,5 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Bonsai.Core" Version="2.9.0" />
-    <PackageReference Include="System.Linq.Dynamic" Version="1.0.7" />
   </ItemGroup>
 </Project>
