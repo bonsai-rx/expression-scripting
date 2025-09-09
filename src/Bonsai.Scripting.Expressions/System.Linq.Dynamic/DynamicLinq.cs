@@ -261,8 +261,12 @@ namespace System.Linq.Dynamic
         #endregion
     }
 
-    internal abstract class DynamicClass
+    /// <summary>
+    /// Provides an abstract base class for anonymous types generated from dynamic query expressions.
+    /// </summary>
+    public abstract class DynamicClass
     {
+        /// <inheritdoc/>
         public override string ToString()
         {
             PropertyInfo[] props = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
