@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -52,7 +53,8 @@ namespace Bonsai.Scripting.Expressions
         {
             var source = arguments.First();
             var sourceType = source.Type.GetGenericArguments()[0];
-            var predicate = System.Linq.Dynamic.DynamicExpression.ParseLambda(sourceType, typeof(bool), Expression);
+            var config = ParsingConfigHelper.CreateParsingConfig(sourceType);
+            var predicate = DynamicExpressionParser.ParseLambda(config, sourceType, typeof(bool), Expression);
             return System.Linq.Expressions.Expression.Call(whereMethod.MakeGenericMethod(sourceType), source, predicate);
         }
 
