@@ -6,6 +6,9 @@
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Bonsai.Scripting.Expressions\ParsingConfigHelper.cs" Link="ParsingConfigHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Bonsai.Design" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>

@@ -45,7 +45,7 @@
             this.scintilla.TabWidth = 2;
             this.scintilla.UseTabs = false;
             this.scintilla.WrapMode = ScintillaNET.WrapMode.Word;
-            this.scintilla.KeyDown += new System.Windows.Forms.KeyEventHandler(this.scintilla_KeyDown);
+            this.scintilla.CharAdded += new System.EventHandler<ScintillaNET.CharAddedEventArgs>(this.scintilla_CharAdded);
             this.scintilla.TextChanged += new System.EventHandler(this.scintilla_TextChanged);
             // 
             // okButton
