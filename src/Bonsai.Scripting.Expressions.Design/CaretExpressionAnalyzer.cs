@@ -33,17 +33,13 @@ namespace Bonsai.Scripting.Expressions.Design
             _textParser = new TextParser(_parsingConfig, _text);
         }
 
-        public LambdaExpression? Parse(Type? itType = null)
+        public string GetCaretExpression(Type? itType = null)
         {
             _startPos = 0;
             try { ParseConditionalOperator(); }
             catch (ParseException) { }
 
-            var text = _text.Substring(_startPos);
-            if (string.IsNullOrEmpty(text))
-                return null;
-
-            return DynamicExpressionParser.ParseLambda(_parsingConfig, itType, null, text);
+            return _text.Substring(_startPos);
         }
 
         // out keyword

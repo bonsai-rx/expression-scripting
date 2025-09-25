@@ -1,19 +1,44 @@
-﻿using System;
+﻿using Bonsai.Scripting.Expressions.Design.Properties;
+using ScintillaNET;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Linq.Dynamic.Core.Exceptions;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using Bonsai.Scripting.Expressions.Design.Properties;
-using ScintillaNET;
 
 namespace Bonsai.Scripting.Expressions.Design
 {
     internal partial class ExpressionScriptEditorDialog : Form
     {
         readonly StringBuilder autoCompleteList = new();
+        static readonly Type[] defaultTypes = new[]
+        {
+            typeof(Object),
+            typeof(Boolean),
+            typeof(Char),
+            typeof(String),
+            typeof(SByte),
+            typeof(Byte),
+            typeof(Int16),
+            typeof(UInt16),
+            typeof(Int32),
+            typeof(UInt32),
+            typeof(Int64),
+            typeof(UInt64),
+            typeof(Single),
+            typeof(Double),
+            typeof(Decimal),
+            typeof(DateTime),
+            typeof(DateTimeOffset),
+            typeof(TimeSpan),
+            typeof(Guid),
+            typeof(Math),
+            typeof(Convert)
+        };
 
         public ExpressionScriptEditorDialog()
         {
@@ -33,7 +58,7 @@ namespace Bonsai.Scripting.Expressions.Design
             scintilla.Styles[Style.Cpp.Word2].ForeColor = ColorTranslator.FromHtml("#2b91af");
             scintilla.Lexer = Lexer.Cpp;
 
-            var types = "Object Boolean Char String SByte Byte Int16 UInt16 Int32 UInt32 Int64 UInt64 Single Double Decimal DateTime DateTimeOffset TimeSpan Guid Math Convert";
+            var types = string.Join(" ", defaultTypes.Select(type => type.Name));
             scintilla.SetKeywords(0, "it iif new outerIt as true false null");
             scintilla.SetKeywords(1, string.Join(" ", types, types.ToLowerInvariant()));
 
@@ -43,6 +68,7 @@ namespace Bonsai.Scripting.Expressions.Design
             scintilla.RegisterRgbaImage(0, Resources.FieldIcon);
             scintilla.RegisterRgbaImage(1, Resources.PropertyIcon);
             scintilla.RegisterRgbaImage(2, Resources.MethodIcon);
+            scintilla.RegisterRgbaImage(3, Resources.TypeIcon);
         }
 
         public Type ItType { get; set; }
@@ -111,21 +137,44 @@ namespace Bonsai.Scripting.Expressions.Design
                     scintilla.CurrentPosition = wordStartPos;
                     lenEntered = currentPos - wordStartPos;
                     var analyzer = new CaretExpressionAnalyzer(config, scintilla.Text, wordStartPos - 1);
-
-                    autoCompleteList.Clear();
-                    var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-                    if (selectedType is null)
+                    var text = analyzer.GetCaretExpression(itType);
+                    try
                     {
-                        AppendMember("it", -1, autoCompleteList);
-                        selectedType = itType;
-                    }
+                        var selectedType = !string.IsNullOrEmpty(text)
+                            ? DynamicExpressionParser.ParseLambda(config, itType, null, text).ReturnType
+                            : null;
 
-                    if (!selectedType.IsEnum)
-                        AppendFields(selectedType, bindingFlags, autoCompleteList);
-                    AppendProperties(selectedType, bindingFlags, autoCompleteList);
-                    AppendMethods(selectedType, bindingFlags, autoCompleteList);
-                    list = autoCompleteList.ToString();
-                    return true;
+                        autoCompleteList.Clear();
+                        var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+                        if (selectedType is null)
+                        {
+                            AppendMember("it", -1, autoCompleteList);
+                            selectedType = itType;
+                        }
+
+                        if (!selectedType.IsEnum)
+                            AppendFields(selectedType, bindingFlags, autoCompleteList);
+                        AppendProperties(selectedType, bindingFlags, autoCompleteList);
+                        AppendMethods(selectedType, bindingFlags, autoCompleteList);
+                        AppendTypes(itType, autoCompleteList);
+                        list = autoCompleteList.ToString();
+                        return true;
+                    }
+                    catch (ParseException)
+                    {
+                        var matchingType = defaultTypes.FirstOrDefault(
+                            type => text.Equals(type.Name, StringComparison.OrdinalIgnoreCase));
+                        if (matchingType is not null)
+                        {
+                            autoCompleteList.Clear();
+                            var bindingFlags = BindingFlags.Public | BindingFlags.Static;
+                            AppendFields(matchingType, bindingFlags, autoCompleteList);
+                            AppendProperties(matchingType, bindingFlags, autoCompleteList);
+                            AppendMethods(matchingType, bindingFlags, autoCompleteList);
+                            list = autoCompleteList.ToString();
+                            return true;
+                        }
+                    }
                 }
                 catch (ParseException) { }
             }
@@ -162,6 +211,15 @@ namespace Bonsai.Scripting.Expressions.Design
             {
                 if (!method.IsSpecialName && nameSet.Add(method.Name))
                     AppendMember(method.Name, 2, sb);
+            }
+        }
+
+        private void AppendTypes(Type itType, StringBuilder sb)
+        {
+            foreach (var type in defaultTypes.Append(itType)
+                                             .OrderBy(t => t.Name))
+            {
+                AppendMember(type.Name, 3, sb);
             }
         }
 

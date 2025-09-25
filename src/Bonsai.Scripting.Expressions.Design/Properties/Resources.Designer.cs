@@ -89,5 +89,15 @@ namespace Bonsai.Scripting.Expressions.Design.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap TypeIcon {
+            get {
+                object obj = ResourceManager.GetObject("TypeIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
