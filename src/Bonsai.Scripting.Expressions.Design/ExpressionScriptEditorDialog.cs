@@ -15,30 +15,6 @@ namespace Bonsai.Scripting.Expressions.Design
     internal partial class ExpressionScriptEditorDialog : Form
     {
         readonly StringBuilder autoCompleteList = new();
-        static readonly Type[] defaultTypes = new[]
-        {
-            typeof(Object),
-            typeof(Boolean),
-            typeof(Char),
-            typeof(String),
-            typeof(SByte),
-            typeof(Byte),
-            typeof(Int16),
-            typeof(UInt16),
-            typeof(Int32),
-            typeof(UInt32),
-            typeof(Int64),
-            typeof(UInt64),
-            typeof(Single),
-            typeof(Double),
-            typeof(Decimal),
-            typeof(DateTime),
-            typeof(DateTimeOffset),
-            typeof(TimeSpan),
-            typeof(Guid),
-            typeof(Math),
-            typeof(Convert)
-        };
 
         public ExpressionScriptEditorDialog()
         {
@@ -58,7 +34,7 @@ namespace Bonsai.Scripting.Expressions.Design
             scintilla.Styles[Style.Cpp.Word2].ForeColor = ColorTranslator.FromHtml("#2b91af");
             scintilla.Lexer = Lexer.Cpp;
 
-            var types = string.Join(" ", defaultTypes.Select(type => type.Name));
+            var types = string.Join(" ", CaretExpressionAnalyzer.DefaultTypes.Select(type => type.Name));
             scintilla.SetKeywords(0, "it iif new outerIt as true false null");
             scintilla.SetKeywords(1, string.Join(" ", types, types.ToLowerInvariant()));
 
@@ -137,44 +113,27 @@ namespace Bonsai.Scripting.Expressions.Design
                     scintilla.CurrentPosition = wordStartPos;
                     lenEntered = currentPos - wordStartPos;
                     var analyzer = new CaretExpressionAnalyzer(config, scintilla.Text, wordStartPos - 1);
-                    var text = analyzer.GetCaretExpression(itType);
-                    try
+                    var primaryType = analyzer.ParseExpressionType(itType, out bool isClassIdentifier);
+
+                    autoCompleteList.Clear();
+                    var appendTypes = false;
+                    var bindingFlags = BindingFlags.Public;
+                    bindingFlags |= isClassIdentifier ? BindingFlags.Static : BindingFlags.Instance;
+                    if (primaryType is null && !isClassIdentifier)
                     {
-                        var selectedType = !string.IsNullOrEmpty(text)
-                            ? DynamicExpressionParser.ParseLambda(config, itType, null, text).ReturnType
-                            : null;
+                        AppendMember("it", -1, autoCompleteList);
+                        primaryType = itType;
+                        appendTypes = true;
+                    }
 
-                        autoCompleteList.Clear();
-                        var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-                        if (selectedType is null)
-                        {
-                            AppendMember("it", -1, autoCompleteList);
-                            selectedType = itType;
-                        }
-
-                        if (!selectedType.IsEnum)
-                            AppendFields(selectedType, bindingFlags, autoCompleteList);
-                        AppendProperties(selectedType, bindingFlags, autoCompleteList);
-                        AppendMethods(selectedType, bindingFlags, autoCompleteList);
+                    if (!primaryType.IsEnum)
+                        AppendFields(primaryType, bindingFlags, autoCompleteList);
+                    AppendProperties(primaryType, bindingFlags, autoCompleteList);
+                    AppendMethods(primaryType, bindingFlags, autoCompleteList);
+                    if (appendTypes)
                         AppendTypes(itType, autoCompleteList);
-                        list = autoCompleteList.ToString();
-                        return true;
-                    }
-                    catch (ParseException)
-                    {
-                        var matchingType = defaultTypes.FirstOrDefault(
-                            type => text.Equals(type.Name, StringComparison.OrdinalIgnoreCase));
-                        if (matchingType is not null)
-                        {
-                            autoCompleteList.Clear();
-                            var bindingFlags = BindingFlags.Public | BindingFlags.Static;
-                            AppendFields(matchingType, bindingFlags, autoCompleteList);
-                            AppendProperties(matchingType, bindingFlags, autoCompleteList);
-                            AppendMethods(matchingType, bindingFlags, autoCompleteList);
-                            list = autoCompleteList.ToString();
-                            return true;
-                        }
-                    }
+                    list = autoCompleteList.ToString();
+                    return true;
                 }
                 catch (ParseException) { }
             }
@@ -216,8 +175,8 @@ namespace Bonsai.Scripting.Expressions.Design
 
         private void AppendTypes(Type itType, StringBuilder sb)
         {
-            foreach (var type in defaultTypes.Append(itType)
-                                             .OrderBy(t => t.Name))
+            foreach (var type in CaretExpressionAnalyzer.DefaultTypes.Append(itType)
+                                                                     .OrderBy(t => t.Name))
             {
                 AppendMember(type.Name, 3, sb);
             }

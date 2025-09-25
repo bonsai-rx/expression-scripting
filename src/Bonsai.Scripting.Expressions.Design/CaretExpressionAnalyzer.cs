@@ -20,6 +20,30 @@ namespace Bonsai.Scripting.Expressions.Design
     {
         private static readonly string[] OutKeywords = ["out", "$out"];
         private const string DiscardVariable = "_";
+        internal static readonly Type[] DefaultTypes = new[]
+        {
+            typeof(Object),
+            typeof(Boolean),
+            typeof(Char),
+            typeof(String),
+            typeof(SByte),
+            typeof(Byte),
+            typeof(Int16),
+            typeof(UInt16),
+            typeof(Int32),
+            typeof(UInt32),
+            typeof(Int64),
+            typeof(UInt64),
+            typeof(Single),
+            typeof(Double),
+            typeof(Decimal),
+            typeof(DateTime),
+            typeof(DateTimeOffset),
+            typeof(TimeSpan),
+            typeof(Guid),
+            typeof(Math),
+            typeof(Convert)
+        };
 
         readonly ParsingConfig _parsingConfig;
         readonly TextParser _textParser;
@@ -34,13 +58,27 @@ namespace Bonsai.Scripting.Expressions.Design
             _primaryStack = new Stack<int>();
         }
 
-        public string GetCaretExpression(Type? itType = null)
+        public Type ParseExpressionType(Type itType, out bool isClassIdentifier)
         {
             _primaryStack.Clear();
             try { ParseConditionalOperator(); }
             catch (ParseException) { }
 
-            return _text.Substring(_primaryStack.FirstOrDefault());
+            isClassIdentifier = false;
+            var primaryText = _text.Substring(_primaryStack.FirstOrDefault());
+            try
+            {
+                return !string.IsNullOrEmpty(primaryText)
+                    ? DynamicExpressionParser.ParseLambda(_parsingConfig, itType, null, primaryText).ReturnType
+                    : null;
+            }
+            catch (ParseException pex)
+            {
+                isClassIdentifier = true;
+                return DefaultTypes.Append(itType).FirstOrDefault(
+                    type => primaryText.Equals(type.Name, StringComparison.OrdinalIgnoreCase))
+                    ?? throw pex;
+            }
         }
 
         // out keyword
