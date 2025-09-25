@@ -23,23 +23,24 @@ namespace Bonsai.Scripting.Expressions.Design
 
         readonly ParsingConfig _parsingConfig;
         readonly TextParser _textParser;
+        readonly Stack<int> _primaryStack;
         readonly string _text;
-        int _startPos;
         
         public CaretExpressionAnalyzer(ParsingConfig config, string text, int position)
         {
             _parsingConfig = config;
             _text = position > 0 ? text.Substring(0, position) : string.Empty;
             _textParser = new TextParser(_parsingConfig, _text);
+            _primaryStack = new Stack<int>();
         }
 
         public string GetCaretExpression(Type? itType = null)
         {
-            _startPos = 0;
+            _primaryStack.Clear();
             try { ParseConditionalOperator(); }
             catch (ParseException) { }
 
-            return _text.Substring(_startPos);
+            return _text.Substring(_primaryStack.FirstOrDefault());
         }
 
         // out keyword
@@ -267,6 +268,7 @@ namespace Bonsai.Scripting.Expressions.Design
         // primary elements
         private void ParsePrimary()
         {
+            _primaryStack.Push(_textParser.CurrentToken.Pos);
             ParsePrimaryStart();
 
             while (true)
@@ -289,11 +291,13 @@ namespace Bonsai.Scripting.Expressions.Design
                     break;
                 }
             }
+
+            if (_textParser.CurrentToken.Id != TokenId.End)
+                _primaryStack.Pop();
         }
 
         private void ParsePrimaryStart()
         {
-            _startPos = _textParser.CurrentToken.Pos;
             switch (_textParser.CurrentToken.Id)
             {
                 case TokenId.Identifier:
