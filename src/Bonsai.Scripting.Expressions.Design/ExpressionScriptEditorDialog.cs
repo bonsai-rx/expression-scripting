@@ -118,7 +118,10 @@ namespace Bonsai.Scripting.Expressions.Design
                     autoCompleteList.Clear();
                     var appendTypes = false;
                     var bindingFlags = BindingFlags.Public;
-                    bindingFlags |= isClassIdentifier ? BindingFlags.Static : BindingFlags.Instance;
+                    bindingFlags |= isClassIdentifier
+                        ? BindingFlags.Static | BindingFlags.FlattenHierarchy
+                        : BindingFlags.Instance;
+
                     if (primaryType is null && !isClassIdentifier)
                     {
                         AppendMember("it", -1, autoCompleteList);
@@ -128,6 +131,9 @@ namespace Bonsai.Scripting.Expressions.Design
 
                     if (!primaryType.IsEnum)
                         AppendFields(primaryType, bindingFlags, autoCompleteList);
+                    else if (isClassIdentifier)
+                        AppendEnumNames(primaryType, autoCompleteList);
+
                     AppendProperties(primaryType, bindingFlags, autoCompleteList);
                     AppendMethods(primaryType, bindingFlags, autoCompleteList);
                     if (appendTypes)
@@ -149,6 +155,14 @@ namespace Bonsai.Scripting.Expressions.Design
                                       .OrderBy(f => f.Name))
             {
                 AppendMember(field.Name, 0, sb);
+            }
+        }
+
+        private void AppendEnumNames(Type type, StringBuilder sb)
+        {
+            foreach (var name in Enum.GetNames(type).OrderBy(f => f))
+            {
+                AppendMember(name, 0, sb);
             }
         }
 
