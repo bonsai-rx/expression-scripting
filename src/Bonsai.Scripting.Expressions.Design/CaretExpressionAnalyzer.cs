@@ -20,6 +20,7 @@ namespace Bonsai.Scripting.Expressions.Design
     {
         private static readonly string[] OutKeywords = ["out", "$out"];
         private const string DiscardVariable = "_";
+        private const char DotCharacter = '.';
         internal static readonly Type[] DefaultTypes = new[]
         {
             typeof(Object),
@@ -52,6 +53,9 @@ namespace Bonsai.Scripting.Expressions.Design
         
         public CaretExpressionAnalyzer(ParsingConfig config, string text, int position)
         {
+            if (!string.IsNullOrEmpty(text) && position > 0 && text[position - 1] == DotCharacter)
+                position = position - 1;
+
             _parsingConfig = config;
             _text = position > 0 ? text.Substring(0, position) : string.Empty;
             _textParser = new TextParser(_parsingConfig, _text);

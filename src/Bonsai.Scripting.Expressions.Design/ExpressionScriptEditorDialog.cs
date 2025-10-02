@@ -112,7 +112,7 @@ namespace Bonsai.Scripting.Expressions.Design
                     var wordStartPos = scintilla.WordStartPosition(currentPos, true);
                     scintilla.CurrentPosition = wordStartPos;
                     lenEntered = currentPos - wordStartPos;
-                    var analyzer = new CaretExpressionAnalyzer(config, scintilla.Text, wordStartPos - 1);
+                    var analyzer = new CaretExpressionAnalyzer(config, scintilla.Text, wordStartPos);
                     var primaryType = analyzer.ParseExpressionType(itType, out bool isClassIdentifier);
 
                     autoCompleteList.Clear();
