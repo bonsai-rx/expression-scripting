@@ -17,7 +17,7 @@ namespace Bonsai.Scripting.Expressions
 
         static IDynamicLinqCustomTypeProvider CreateCustomTypeProvider(ParsingConfig config, params Type[] additionalTypes)
         {
-            return new DefaultDynamicLinqCustomTypeProvider(
+            return new SimpleDynamicLinqCustomTypeProvider(
                 config,
                 additionalTypes.SelectMany(EnumerateTypeHierarchy).ToList());
         }
@@ -34,6 +34,22 @@ namespace Bonsai.Scripting.Expressions
             {
                 yield return type;
                 type = type.BaseType;
+            }
+        }
+
+        class SimpleDynamicLinqCustomTypeProvider : DefaultDynamicLinqCustomTypeProvider
+        {
+            readonly HashSet<Type> customTypes;
+
+            public SimpleDynamicLinqCustomTypeProvider(ParsingConfig config, IList<Type> additionalTypes)
+                : base(config, additionalTypes, cacheCustomTypes: false)
+            {
+                customTypes = new(AdditionalTypes);
+            }
+
+            public override HashSet<Type> GetCustomTypes()
+            {
+                return customTypes;
             }
         }
     }
