@@ -34,9 +34,9 @@ namespace Bonsai.Scripting.Expressions.Design
             scintilla.Styles[Style.Cpp.Word2].ForeColor = ColorTranslator.FromHtml("#2b91af");
             scintilla.Lexer = Lexer.Cpp;
 
-            var types = string.Join(" ", CaretExpressionAnalyzer.DefaultTypes.Select(type => type.Name));
-            scintilla.SetKeywords(0, "it iif new outerIt as true false null");
-            scintilla.SetKeywords(1, string.Join(" ", types, types.ToLowerInvariant()));
+            var typeKeywords = string.Join(" ", CaretExpressionAnalyzer.PredefinedTypeKeywords.Keys);
+            scintilla.SetKeywords(0, "it iif new outerIt as true false null " + typeKeywords);
+            scintilla.SetKeywords(1, string.Join(" ", CaretExpressionAnalyzer.PredefinedTypes.Select(type => type.Name)));
 
             scintilla.AutoCSeparator = ';';
             scintilla.AutoCTypeSeparator = '?';
@@ -189,7 +189,7 @@ namespace Bonsai.Scripting.Expressions.Design
 
         private void AppendTypes(Type itType, StringBuilder sb)
         {
-            foreach (var type in CaretExpressionAnalyzer.DefaultTypes.Append(itType)
+            foreach (var type in CaretExpressionAnalyzer.PredefinedTypes.Append(itType)
                                                                      .OrderBy(t => t.Name))
             {
                 AppendMember(type.Name, 3, sb);

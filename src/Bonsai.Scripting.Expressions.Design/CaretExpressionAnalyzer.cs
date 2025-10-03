@@ -21,29 +21,50 @@ namespace Bonsai.Scripting.Expressions.Design
         private static readonly string[] OutKeywords = ["out", "$out"];
         private const string DiscardVariable = "_";
         private const char DotCharacter = '.';
-        internal static readonly Type[] DefaultTypes = new[]
+        internal static readonly Dictionary<string, Type> PredefinedTypeKeywords = new()
         {
-            typeof(Object),
-            typeof(Boolean),
-            typeof(Char),
-            typeof(String),
-            typeof(SByte),
-            typeof(Byte),
-            typeof(Int16),
-            typeof(UInt16),
-            typeof(Int32),
-            typeof(UInt32),
-            typeof(Int64),
-            typeof(UInt64),
-            typeof(Single),
-            typeof(Double),
-            typeof(Decimal),
+            { "object", typeof(object) },
+            { "bool", typeof(bool) },
+            { "byte", typeof(byte) },
+            { "char", typeof(char) },
+            { "decimal", typeof(decimal) },
+            { "double", typeof(double) },
+            { "float", typeof(float) },
+            { "int", typeof(int) },
+            { "long", typeof(long) },
+            { "sbyte", typeof(sbyte) },
+            { "short", typeof(short) },
+            { "string", typeof(string) },
+            { "uint", typeof(uint) },
+            { "ulong", typeof(ulong) },
+            { "ushort", typeof(ushort) }
+        };
+
+        internal static readonly Type[] PredefinedTypes = new[]
+        {
+            typeof(object),
+            typeof(bool),
+            typeof(char),
+            typeof(string),
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
             typeof(DateTime),
             typeof(DateTimeOffset),
             typeof(TimeSpan),
             typeof(Guid),
             typeof(Math),
-            typeof(Convert)
+            typeof(Convert),
+            typeof(Uri),
+            typeof(Enum)
         };
 
         readonly ParsingConfig _parsingConfig;
@@ -79,8 +100,9 @@ namespace Bonsai.Scripting.Expressions.Design
             catch (ParseException pex)
             {
                 isClassIdentifier = true;
-                return DefaultTypes.Append(itType).FirstOrDefault(
-                    type => primaryText.Equals(type.Name, StringComparison.OrdinalIgnoreCase))
+                return PredefinedTypeKeywords.TryGetValue(primaryText, out Type type)
+                    ? type
+                    : PredefinedTypes.Append(itType).FirstOrDefault(type => primaryText.Equals(type.Name))
                     ?? throw pex;
             }
         }
