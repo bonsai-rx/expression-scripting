@@ -61,7 +61,7 @@ namespace Bonsai.Scripting.Expressions
                 var actionType = System.Linq.Expressions.Expression.GetActionType(sourceType);
                 var itParameter = new[] { System.Linq.Expressions.Expression.Parameter(sourceType, string.Empty) };
                 var config = ParsingConfigHelper.CreateParsingConfig(sourceType);
-                var onNext = DynamicExpressionParser.ParseLambda(actionType, config, itParameter, null, Expression);
+                var onNext = DynamicExpressionHelper.ParseLambda(actionType, config, itParameter, null, Expression);
                 return System.Linq.Expressions.Expression.Call(doMethod.MakeGenericMethod(sourceType), source, onNext);
             }
             else return source;

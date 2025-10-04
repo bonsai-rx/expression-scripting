@@ -55,7 +55,7 @@ namespace Bonsai.Scripting.Expressions
             var source = arguments.First();
             var sourceType = source.Type.GetGenericArguments()[0];
             var config = ParsingConfigHelper.CreateParsingConfig(sourceType);
-            var selector = DynamicExpressionParser.ParseLambda(config, sourceType, null, Expression);
+            var selector = DynamicExpressionHelper.ParseLambda(config, sourceType, null, Expression);
             return System.Linq.Expressions.Expression.Call(selectMethod.MakeGenericMethod(sourceType, selector.ReturnType), source, selector);
         }
 
