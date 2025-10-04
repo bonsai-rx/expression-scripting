@@ -97,13 +97,15 @@ namespace Bonsai.Scripting.Expressions.Design
                     ? DynamicExpressionParser.ParseLambda(_parsingConfig, itType, null, primaryText).ReturnType
                     : null;
             }
-            catch (ParseException pex)
+            catch (ParseException)
             {
                 isClassIdentifier = true;
-                return PredefinedTypeKeywords.TryGetValue(primaryText, out Type type)
-                    ? type
-                    : PredefinedTypes.Append(itType).FirstOrDefault(type => primaryText.Equals(type.Name))
-                    ?? throw pex;
+                if (PredefinedTypeKeywords.TryGetValue(primaryText, out Type keywordType))
+                    return keywordType;
+                else if (PredefinedTypes.Append(itType).FirstOrDefault(type => primaryText.Equals(type.Name)) is Type type)
+                    return type;
+                else
+                    throw;
             }
         }
 
