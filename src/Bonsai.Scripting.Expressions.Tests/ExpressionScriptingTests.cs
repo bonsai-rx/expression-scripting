@@ -31,6 +31,13 @@ namespace Bonsai.Scripting.Expressions.Tests
         [DataRow("Math.PI", 42, Math.PI)]
         [DataRow("Convert.ToInt16(it)", 42, (short)42)]
         [DataRow("new(it as Data).Data", 42, 42)]
+        // modern Dynamic LINQ parser
+        [DataRow("float(it)", 42, 42f)]
+        [DataRow("long?(it).HasValue", 42, true)]
+        [DataRow("bool.TrueString", 42, "True")]
+        [DataRow("new[] { it }", 42, new[] { 42 })]
+        [DataRow("new[] { it }.Select(x => x * 2).ToArray()", 21, new[] { 42 })]
+        [DataRow("np(string(null).Length) ?? it", 42, 42)]
         public Task TestExpressionTransform<TSource, TResult>(string expression, TSource value, TResult expected)
         {
             return AssertExpressionTransform(expression, value, expected);
