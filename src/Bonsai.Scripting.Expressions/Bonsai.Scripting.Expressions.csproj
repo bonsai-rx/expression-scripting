@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>This package provides operators implementing expression scripting infrastructure.</Description>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Bonsai.Core" Version="2.9.0" />
