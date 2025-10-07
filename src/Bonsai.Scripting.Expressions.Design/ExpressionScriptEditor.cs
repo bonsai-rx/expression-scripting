@@ -53,9 +53,9 @@ namespace Bonsai.Scripting.Expressions.Design
             var editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
             if (editorService != null)
             {
-                using var editorDialog = new ExpressionScriptEditorDialog();
+                var itType = GetDataSource(context, provider)?.ObservableType;
+                using var editorDialog = new ExpressionScriptEditorDialog(itType);
                 editorDialog.Script = (string)value;
-                editorDialog.ItType = GetDataSource(context, provider)?.ObservableType;
                 return editorService.ShowDialog(editorDialog) == DialogResult.OK
                     ? editorDialog.Script
                     : value;

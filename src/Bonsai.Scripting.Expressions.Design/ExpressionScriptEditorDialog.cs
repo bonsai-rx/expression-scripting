@@ -16,8 +16,9 @@ namespace Bonsai.Scripting.Expressions.Design
     {
         readonly StringBuilder autoCompleteList = new();
 
-        public ExpressionScriptEditorDialog()
+        public ExpressionScriptEditorDialog(Type? itType = null)
         {
+            ItType = itType;
             InitializeComponent();
             scintilla.StyleResetDefault();
             scintilla.Styles[Style.Default].Font = "Consolas";
@@ -35,8 +36,11 @@ namespace Bonsai.Scripting.Expressions.Design
             scintilla.Lexer = Lexer.Cpp;
 
             var typeKeywords = string.Join(" ", CaretExpressionAnalyzer.PredefinedTypeKeywords.Keys);
+            var predefinedTypes = CaretExpressionAnalyzer.PredefinedTypes;
             scintilla.SetKeywords(0, "it iif new outerIt as true false null " + typeKeywords);
-            scintilla.SetKeywords(1, string.Join(" ", CaretExpressionAnalyzer.PredefinedTypes.Select(type => type.Name)));
+            scintilla.SetKeywords(1, string.Join(" ", Enumerable.Concat(
+                (itType is not null ? predefinedTypes.Append(itType) : predefinedTypes).Select(type => type.Name),
+                predefinedTypes.Select(type => type.Name.ToLowerInvariant()))));
 
             scintilla.AutoCSeparator = ';';
             scintilla.AutoCTypeSeparator = '?';
@@ -47,7 +51,7 @@ namespace Bonsai.Scripting.Expressions.Design
             scintilla.RegisterRgbaImage(3, Resources.TypeIcon);
         }
 
-        public Type ItType { get; set; }
+        public Type? ItType { get; }
 
         public string Script { get; set; }
 
@@ -190,7 +194,7 @@ namespace Bonsai.Scripting.Expressions.Design
         private void AppendTypes(Type itType, StringBuilder sb)
         {
             foreach (var type in CaretExpressionAnalyzer.PredefinedTypes.Append(itType)
-                                                                     .OrderBy(t => t.Name))
+                                                                        .OrderBy(t => t.Name))
             {
                 AppendMember(type.Name, 3, sb);
             }
