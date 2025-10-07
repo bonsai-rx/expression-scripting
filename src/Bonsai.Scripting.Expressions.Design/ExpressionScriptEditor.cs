@@ -16,28 +16,52 @@ namespace Bonsai.Scripting.Expressions.Design
         static readonly bool IsRunningOnMono = Type.GetType("Mono.Runtime") != null;
 
         /// <inheritdoc/>
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            if (provider != null && !IsRunningOnMono)
+            {
+                var scintillaEditor = new ScintillaExpressionScriptEditor(this);
+                return scintillaEditor.EditValue(context, provider, value);
+            }
+
+            return base.EditValue(context, provider, value);
+        }
+    }
+
+    internal class ScintillaExpressionScriptEditor : DataSourceTypeEditor
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScintillaExpressionScriptEditor"/> class.
+        /// </summary>
+        public ScintillaExpressionScriptEditor(UITypeEditor baseEditor)
+            : base(DataSource.Input)
+        {
+            BaseEditor = baseEditor;
+        }
+
+        private UITypeEditor BaseEditor { get; }
+
+        /// <inheritdoc/>
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
         {
             return UITypeEditorEditStyle.Modal;
         }
 
-        /// <inheritdoc/>
         public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
         {
-            if (provider != null && !IsRunningOnMono)
+            var workflowBuilder = (WorkflowBuilder)provider.GetService(typeof(WorkflowBuilder));
+            var editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
+            if (editorService != null)
             {
-                var editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
-                if (editorService != null)
-                {
-                    using var editorDialog = new ExpressionScriptEditorDialog();
-                    editorDialog.Script = (string)value;
-                    return editorService.ShowDialog(editorDialog) == DialogResult.OK
-                        ? editorDialog.Script
-                        : value;
-                }
+                var itType = GetDataSource(context, provider)?.ObservableType;
+                using var editorDialog = new ExpressionScriptEditorDialog(itType);
+                editorDialog.Script = (string)value;
+                return editorService.ShowDialog(editorDialog) == DialogResult.OK
+                    ? editorDialog.Script
+                    : value;
             }
 
-            return base.EditValue(context, provider, value);
+            return BaseEditor.EditValue(context, provider, value);
         }
     }
 }
