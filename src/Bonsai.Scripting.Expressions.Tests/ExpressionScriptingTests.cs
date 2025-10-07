@@ -63,6 +63,7 @@ namespace Bonsai.Scripting.Expressions.Tests
         [DataRow("guid.empty.tobytearray()[0]", 42, 0)]
         [DataRow("timespan.tickspermillisecond", 0, TimeSpan.TicksPerMillisecond)]
         [DataRow("it > 0 ? convert.toint16(it) : int16.minvalue", 42, (short)42)]
+        [DataRow("new(single(it) as X, single(it) as Y).X", 42, 42f)]
         public Task TestCasingCompatibility<TSource, TResult>(string expression, TSource value, TResult expected)
         {
             return AssertExpressionTransform(expression, value, expected);

@@ -52,7 +52,7 @@ namespace Bonsai.Scripting.Expressions
             if (replacements?.Count > 0)
             {
                 var sb = new StringBuilder(text);
-                for (int i = 0; i < replacements.Count; i++)
+                for (int i = replacements.Count - 1; i >= 0; i--)
                 {
                     var (token, keyword) = replacements[i];
                     sb.Remove(token.Pos, token.Text.Length);
