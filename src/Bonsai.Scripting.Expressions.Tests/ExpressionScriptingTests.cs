@@ -24,7 +24,7 @@ namespace Bonsai.Scripting.Expressions.Tests
                 Assert.AreEqual(expected, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("it", 42, 42)]
         [DataRow("it * 2", 21, 42)]
         [DataRow("Single(it)", 42, 42f)]
@@ -38,6 +38,7 @@ namespace Bonsai.Scripting.Expressions.Tests
         [DataRow("new[] { it }", 42, new[] { 42 })]
         [DataRow("new[] { it }.Select(x => x * 2).ToArray()", 21, new[] { 42 })]
         [DataRow("np(string(null).Length) ?? it", 42, 42)]
+        [DataRow("DayOfWeek(it + 1)", DayOfWeek.Monday, DayOfWeek.Tuesday)]
         public Task TestExpressionTransform<TSource, TResult>(string expression, TSource value, TResult expected)
         {
             return AssertExpressionTransform(expression, value, expected);
@@ -52,7 +53,7 @@ namespace Bonsai.Scripting.Expressions.Tests
         [TestMethod]
         public Task TestObjectExpression() => AssertExpressionTransform("object(it)", 42, (object)42);
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("single(it)", 42, 42f)]
         [DataRow("int64?(it).hasvalue", 42, true)]
         [DataRow("math.pi", 42, Math.PI)]
@@ -69,7 +70,7 @@ namespace Bonsai.Scripting.Expressions.Tests
             return AssertExpressionTransform(expression, value, expected);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("")]
         [DataRow("string(it)")]
         public Task TestInvalidExpression(string expression)
