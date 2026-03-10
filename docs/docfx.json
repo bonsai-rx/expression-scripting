@@ -77,6 +77,7 @@
       ]
     },
     "xref": [
+      "https://learn.microsoft.com/en-us/dotnet/.xrefmap.json",
       "https://bonsai-rx.org/docs/xrefmap.yml",
       "https://horizongir.github.io/reactive/xrefmap.yml"
     ]

@@ -1,6 +1,6 @@
-# Bonsai.Scripting.Expressions
+# Bonsai - Expression Scripting
 
-`Bonsai.Scripting.Expressions` provides operators implementing expression scripting infrastructure in the [Bonsai visual reactive programming language](https://bonsai-rx.org).
+`Bonsai.Scripting.Expressions` provides operators implementing expression scripting infrastructure for [Bonsai](https://bonsai-rx.org). It uses the [Dynamic LINQ library](https://dynamic-linq.net/) to assemble expression trees directly into the workflow.
 
 ## How to Use
 

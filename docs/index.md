@@ -1,5 +1,5 @@
 ---
-_layout: landing
+title: Getting Started
 ---
 
 [!INCLUDE [](README.md)]
