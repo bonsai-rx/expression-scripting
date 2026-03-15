@@ -39,7 +39,7 @@ namespace Bonsai.Scripting.Expressions
         /// Gets or sets the expression that generates the singleton element.
         /// </summary>
         /// <remarks>
-        /// The <code>it</code> parameter stores the singleton <see cref="Unit"/> object
+        /// The <c>it</c> parameter stores the singleton <see cref="Unit"/> object
         /// representing no data.
         /// </remarks>
         [Editor("Bonsai.Scripting.Expressions.Design.ExpressionScriptEditor, Bonsai.Scripting.Expressions.Design", DesignTypes.UITypeEditor)]
