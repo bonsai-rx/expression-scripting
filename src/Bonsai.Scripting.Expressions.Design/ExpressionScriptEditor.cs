@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Windows.Forms.Design;
 using System.Windows.Forms;
 using Bonsai.Design;
+using System.Reactive;
 
 namespace Bonsai.Scripting.Expressions.Design
 {
@@ -53,7 +54,7 @@ namespace Bonsai.Scripting.Expressions.Design
             var editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
             if (editorService != null)
             {
-                var itType = GetDataSource(context, provider)?.ObservableType;
+                var itType = context.Instance is ExpressionSource ? typeof(Unit) : GetDataSource(context, provider)?.ObservableType;
                 using var editorDialog = new ExpressionScriptEditorDialog(itType);
                 editorDialog.Script = (string)value;
                 return editorService.ShowDialog(editorDialog) == DialogResult.OK
