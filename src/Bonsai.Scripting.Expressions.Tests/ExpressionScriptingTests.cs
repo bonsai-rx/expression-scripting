@@ -71,12 +71,41 @@ namespace Bonsai.Scripting.Expressions.Tests
         }
 
         [TestMethod]
+        [DataRow("it.Value == NestedEnum.B", true)]
+        [DataRow("NestedEnum(it.Value + 1)", NestedEnum.C)]
+        public Task TestNestedPropertyType<TResult>(string expression, TResult expected)
+        {
+            return AssertExpressionTransform(expression, new NestedElement { Value = NestedEnum.B }, expected);
+        }
+
+        [TestMethod]
+        [DataRow("it.Element.Value == NestedEnum.B", true)]
+        [DataRow("NestedElement(object(it.Element)).Value", NestedEnum.B)]
+        public Task TestTransitiveNestedPropertyType<TResult>(string expression, TResult expected)
+        {
+            var value = new NestedContainer { Element = new NestedElement { Value = NestedEnum.B } };
+            return AssertExpressionTransform(expression, value, expected);
+        }
+
+        [TestMethod]
         [DataRow("")]
         [DataRow("string(it)")]
         public Task TestInvalidExpression(string expression)
         {
             return Assert.ThrowsExactlyAsync<WorkflowBuildException>(() =>
                 AssertExpressionTransform(expression, 42, (object)null));
+        }
+
+        public enum NestedEnum { A, B, C }
+
+        public class NestedElement
+        {
+            public NestedEnum Value { get; set; }
+        }
+
+        public class NestedContainer
+        {
+            public NestedElement Element { get; set; }
         }
 
         class Return<TValue>(TValue value) : Source<TValue>

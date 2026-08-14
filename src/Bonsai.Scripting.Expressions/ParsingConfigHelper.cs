@@ -24,16 +24,25 @@ namespace Bonsai.Scripting.Expressions
 
         static IEnumerable<Type> EnumerateTypeHierarchy(Type type)
         {
-            var interfaces = type.GetInterfaces();
-            for (int i = 0; i < interfaces.Length; i++)
+            var visited = new HashSet<Type>();
+            var stack = new Stack<Type>();
+            stack.Push(type);
+            while (stack.Count > 0)
             {
-                yield return interfaces[i];
-            }
-
-            while (type is not null)
-            {
-                yield return type;
-                type = type.BaseType;
+                var current = stack.Pop();
+                if (!visited.Add(current)) continue;
+                foreach (var interfaceType in current.GetInterfaces())
+                {
+                    yield return interfaceType;
+                }
+                for (var baseType = current; baseType is not null; baseType = baseType.BaseType)
+                {
+                    yield return baseType;
+                }
+                foreach (var property in current.GetProperties())
+                {
+                    stack.Push(property.PropertyType);
+                }
             }
         }
 
